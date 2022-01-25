@@ -57,7 +57,7 @@ public:
 	void ChangeSettingNum(const char *name, double val) override;
 	std::string GetStats() override;
 	bool GetData(void *buffer, size_t len) override;
-	SoundStreamInfo GetFormat() override;
+	SoundStreamInfoEx GetFormatEx() override;
 
 protected:
 	Music_Emu *Emu;
@@ -167,9 +167,9 @@ GMESong::GMESong(Music_Emu *emu, int sample_rate)
 }
 
 
-SoundStreamInfo GMESong::GetFormat()
+SoundStreamInfoEx GMESong::GetFormatEx()
 {
-	return { 32*1024, SampleRate, -2 };
+	return { 32*1024, SampleRate, SampleType_Int16, ChannelConfig_Stereo };
 }
 
 //==========================================================================
