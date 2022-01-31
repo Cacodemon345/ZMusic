@@ -105,11 +105,11 @@ else()
 endif()
 
 # System MIDI support
-if(WIN32)
+if(WIN32 AND NOT WINDOWS_STORE)
 	target_compile_definitions(zmusic-obj INTERFACE HAVE_SYSTEM_MIDI)
 	target_link_libraries(zmusic-obj INTERFACE winmm)
 	target_sources(zmusic-obj INTERFACE mididevices/music_win_mididevice.cpp)
-elseif(NOT APPLE)
+elseif(NOT APPLE AND NOT WIN32)
 	find_package(ALSA)
     if(ALSA_FOUND)
 		target_compile_definitions(zmusic-obj INTERFACE HAVE_SYSTEM_MIDI)
@@ -123,7 +123,7 @@ elseif(NOT APPLE)
 	endif()
 endif()
 
-if(WIN32)
+if(WIN32 AND NOT WINDOWS_STORE)
 	target_sources(zmusic-obj
 	INTERFACE
 		musicformats/win32/i_cd.cpp

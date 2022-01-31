@@ -83,7 +83,8 @@ void FModule::Unload()
 
 bool FModule::Open(const char* lib)
 {
-#ifdef _WIN32
+	wchar_t libw[260] = { 0 };
+#if defined _WIN32 && !defined _UWP_PLAT
 	if((handle = GetModuleHandleA(lib)) != nullptr)
 		return true;
 #else
@@ -91,7 +92,12 @@ bool FModule::Open(const char* lib)
 	if(*lib == '\0')
 		return false;
 #endif
+#if defined _UWP_PLAT
+	MultiByteToWideChar(CP_UTF8, 0, lib, -1, libw, sizeof(libw) / sizeof(wchar_t));
+	handle = LoadPackagedLibrary(libw, 0);
+#else
 	handle = LoadLibraryA(lib);
+#endif
 	return handle != nullptr;
 }
 

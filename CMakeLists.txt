@@ -46,7 +46,7 @@ if(MSVC AND CMAKE_VERSION VERSION_LESS 3.15)
 	message(WARNING "Some things may be misconfigured. Please update to CMake >= 3.15 with Visual Studio.")
 endif()
 if(NOT CMAKE_MSVC_RUNTIME_LIBRARY)
-	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>$<IF:${WINDOWS_STORE},DLL, >")
 endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
@@ -65,7 +65,7 @@ if(MSVC)
 		"/Gy" # Function-level linking
 		"/GR-" # Disable run-time type information
 		"/permissive-"
-		"/Oy" "/Oi" "/GS-"
+		"/Oy" "/Oi" "/GS-" "/EHsc"
 
 		# Disable warnings for unsecure CRT functions from VC8+
 		"/wd4996"
@@ -74,19 +74,28 @@ if(MSVC)
 	add_compile_definitions(
 		"UNICODE"
 		"_UNICODE"
-		"_WIN32_WINNT=0x0600"
+		"strcasecmp=stricmp"
+		"strncasecmp=strnicmp"
 		# Debug allocations in debug builds
 		$<$<CONFIG:DEBUG>:_CRTDBG_MAP_ALLOC>
 	)
 
+	if (WINDOWS_STORE)
+		add_compile_definitions("_UWP_PLAT" "_WIN32_WINNT=0x0602")
+	else()
+		add_compile_definitions("_WIN32_WINNT=0x0600")
+	endif()
+
 	add_link_options(
 		"/opt:ref" # Eliminate unreferenced functions and data
 		"/opt:icf" # Perform identical COMDAT folding
-		"/nodefaultlib:msvcrt"
 		$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:/TSAWARE>
 		"/LARGEADDRESSAWARE"
 	)
 
+	if (NOT WINDOWS_STORE)
+		add_link_options("/nodefaultlib:msvcrt")
+	endif()
 	# RelWithDebInfo uses /Ob1 by default instead of Ob2 like Release
 	string(REPLACE "/Ob1 " "/Ob2 " CMAKE_CXX_FLAGS_RELWITHDEBINFO ${CMAKE_CXX_FLAGS_RELWITHDEBINFO} )
 
